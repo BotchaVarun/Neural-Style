@@ -270,4 +270,4 @@ if __name__ == '__main__':
     print("Starting Flask application...")
     print("Note: The first style transfer may take longer as the model needs to be downloaded and loaded.")
     
-    app.run(debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=8080, debug=True, threaded=True)
