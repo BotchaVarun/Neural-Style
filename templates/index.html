@@ -1,0 +1,569 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            border: none;
+        }
+        
+        .card-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 1rem 0;
+        }
+        
+        .filter-select {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .generate-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .loading-spinner {
+            display: none;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-section {
+            display: none;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-section {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+        
+        .filter-upload-area {
+            border: 2px dashed #6c757d;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(108, 117, 125, 0.05);
+            margin-top: 0.5rem;
+        }
+        
+        .filter-upload-area:hover {
+            border-color: #495057;
+            background: rgba(73, 80, 87, 0.1);
+        }
+        
+        .filter-upload-area.dragover {
+            border-color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+        }
+
+        .style-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1><i class="fas fa-image"></i> AI Image Filter Studio</h1>
+                <p class="mb-0">Transform your images with beautiful filters & AI style transfer</p>
+            </div>
+            <div class="card-body">
+                <!-- Upload Section -->
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h4>Upload Your Image</h4>
+                    <p class="text-muted">Drag and drop or click to select</p>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                        <i class="fas fa-folder-open"></i> Choose File
+                    </button>
+                </div>
+                
+                <!-- Image Preview -->
+                <div id="imagePreview" style="display: none; text-align: center; margin: 2rem 0;">
+                    <img id="previewImg" class="image-preview" alt="Image preview">
+                </div>
+                
+                <!-- Filter Selection -->
+                <div class="form-section">
+                    <label for="filterSelect" class="form-label">
+                        <i class="fas fa-magic"></i> Choose Filter
+                    </label>
+                    <select id="filterSelect" class="form-select filter-select">
+                        <option value="">Select a filter...</option>
+                        
+                        <!-- Basic Filters -->
+                        <optgroup label="Basic Filters">
+                            <option value="grayscale">Grayscale</option>
+                            <option value="blur">Blur</option>
+                            <option value="edge-detect">Edge Detection</option>
+                            <option value="sharpen">Sharpen</option>
+                            <option value="emboss">Emboss</option>
+                        </optgroup>
+                        
+                        <!-- AI Style Transfer -->
+                        <optgroup label="AI Art Styles">
+                            <option value="monalisa"> Mona Lisa Style</option>
+                            <option value="picasso">Picasso Style</option>
+                            <option value="stary">Starry Night Style</option>
+                            <option value="oilpainting1">Oil Painting 1</option>
+                            <option value="oilpainting2">Oil Painting 2</option>
+                            <option value="oilpainting3"> Oil Painting 3</option>
+                            <option value="anime">Anime Style</option>
+                        </optgroup>
+                        
+                        <!-- Custom Filter -->
+                        <optgroup label="Custom">
+                            <option value="other">Upload Custom Style</option>
+                        </optgroup>
+                    </select>
+                    
+                    <!-- Style Transfer Notice -->
+                    <div id="styleNotice" class="style-notice" style="display: none;">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>AI Style Transfer:</strong> This will apply artistic style using neural networks. 
+                        Processing may take 10-30 seconds depending on image size.
+                    </div>
+                    
+                    <!-- Custom Filter Upload Section -->
+                    <div id="customFilterSection" style="display: none; margin-top: 1.5rem;">
+                        <label for="filterImageInput" class="form-label">
+                            <i class="fas fa-image"></i> Upload Style Image
+                        </label>
+                        <div class="upload-area filter-upload-area" id="filterUploadArea">
+                            <i class="fas fa-plus-circle upload-icon" style="font-size: 2rem;"></i>
+                            <h5>Upload Style Image</h5>
+                            <p class="text-muted">This image's artistic style will be applied to your photo using AI</p>
+                            <input type="file" id="filterImageInput" accept="image/*" style="display: none;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('filterImageInput').click()">
+                                <i class="fas fa-folder-open"></i> Choose Style Image
+                            </button>
+                        </div>
+                        
+                        <!-- Filter Image Preview -->
+                        <div id="filterImagePreview" style="display: none; text-align: center; margin: 1rem 0;">
+                            <img id="filterPreviewImg" class="image-preview" alt="Style image preview" style="max-height: 150px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <div class="text-center">
+                    <button id="generateBtn" class="btn generate-btn" disabled>
+                        <i class="fas fa-magic"></i> Generate
+                    </button>
+                </div>
+                
+                <!-- Loading Animation -->
+                <div id="loadingSpinner" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Processing your image...</p>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                
+                <!-- Result Section -->
+                <div id="resultSection" class="result-section">
+                    <h4>Your Transformed Image</h4>
+                    <img id="resultImg" class="image-preview" alt="Processed image">
+                    <div class="mt-3">
+                        <a id="downloadBtn" class="download-btn" href="#" download>
+                            <i class="fas fa-download"></i> Download Image
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+       let selectedFile = null;
+let selectedFilterFile = null;
+
+// DOM elements
+const imageInput = document.getElementById('imageInput');
+const uploadArea = document.getElementById('uploadArea');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+const filterSelect = document.getElementById('filterSelect');
+const generateBtn = document.getElementById('generateBtn');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const errorMessage = document.getElementById('errorMessage');
+const resultSection = document.getElementById('resultSection');
+const resultImg = document.getElementById('resultImg');
+const downloadBtn = document.getElementById('downloadBtn');
+
+// Custom filter elements
+const customFilterSection = document.getElementById('customFilterSection');
+const filterImageInput = document.getElementById('filterImageInput');
+const filterUploadArea = document.getElementById('filterUploadArea');
+const filterImagePreview = document.getElementById('filterImagePreview');
+const filterPreviewImg = document.getElementById('filterPreviewImg');
+
+// File input change handler
+imageInput.addEventListener('change', handleFileSelect);
+
+// Filter image input change handler
+filterImageInput.addEventListener('change', handleFilterFileSelect);
+
+// Drag and drop handlers for main image
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFile(files[0]);
+    }
+});
+
+// Drag and drop handlers for filter image
+filterUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    filterUploadArea.classList.add('dragover');
+});
+
+filterUploadArea.addEventListener('dragleave', () => {
+    filterUploadArea.classList.remove('dragover');
+});
+
+filterUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    filterUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFilterFile(files[0]);
+    }
+});
+
+// Click handler for upload area
+uploadArea.addEventListener('click', () => {
+    imageInput.click();
+});
+
+// Click handler for filter upload area
+filterUploadArea.addEventListener('click', () => {
+    filterImageInput.click();
+});
+
+// Filter selection handler - THIS IS THE KEY FIX
+filterSelect.addEventListener('change', function() {
+    if (this.value === 'other') {
+        customFilterSection.style.display = 'block';
+    } else {
+        customFilterSection.style.display = 'none';
+        selectedFilterFile = null;
+        filterImagePreview.style.display = 'none';
+    }
+    checkFormValidity();
+});
+
+// Generate button handler
+generateBtn.addEventListener('click', processImage);
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleFile(file);
+    }
+}
+
+function handleFilterFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleFilterFile(file);
+    }
+}
+
+function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showError('Please select a valid image file.');
+        return;
+    }
+    
+    if (file.size > 16 * 1024 * 1024) {
+        showError('File size must be less than 16MB.');
+        return;
+    }
+    
+    selectedFile = file;
+    displayImagePreview(file);
+    checkFormValidity();
+    hideError();
+}
+
+function handleFilterFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showError('Please select a valid filter image file.');
+        return;
+    }
+    
+    if (file.size > 16 * 1024 * 1024) {
+        showError('Filter image size must be less than 16MB.');
+        return;
+    }
+    
+    selectedFilterFile = file;
+    displayFilterImagePreview(file);
+    checkFormValidity();
+    hideError();
+}
+
+function displayImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        imagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function displayFilterImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        filterPreviewImg.src = e.target.result;
+        filterImagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function checkFormValidity() {
+    const hasFile = selectedFile !== null;
+    const hasFilter = filterSelect.value !== '';
+    const needsFilterImage = filterSelect.value === 'other';
+    const hasFilterImage = selectedFilterFile !== null;
+    
+    // Enable button if we have main image and filter selected
+    // For 'other' filter, we also need the filter image
+    const isValid = hasFile && hasFilter && (!needsFilterImage || hasFilterImage);
+    generateBtn.disabled = !isValid;
+}
+
+async function processImage() {
+    if (!selectedFile || !filterSelect.value) {
+        showError('Please select an image and filter.');
+        return;
+    }
+    
+    if (filterSelect.value === 'other' && !selectedFilterFile) {
+        showError('Please select a filter image for the custom filter.');
+        return;
+    }
+    
+    // Show loading state
+    generateBtn.disabled = true;
+    loadingSpinner.style.display = 'block';
+    resultSection.style.display = 'none';
+    hideError();
+    
+    try {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('filter', filterSelect.value);
+        
+        // Add filter image if using custom filter
+        if (filterSelect.value === 'other' && selectedFilterFile) {
+            formData.append('filterImage', selectedFilterFile);
+        }
+        
+        const response = await fetch('/process', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Display result
+            resultImg.src = 'data:image/jpeg;base64,' + result.image;
+            downloadBtn.href = 'data:image/jpeg;base64,' + result.image;
+            downloadBtn.download = 'filtered_' + result.filename;
+            resultSection.style.display = 'block';
+        } else {
+            showError(result.error || 'An error occurred while processing the image.');
+        }
+        
+    } catch (error) {
+        showError('Network error: ' + error.message);
+    } finally {
+        // Hide loading state
+        loadingSpinner.style.display = 'none';
+        checkFormValidity(); // Re-enable button if form is valid
+    }
+}
+
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+function hideError() {
+    errorMessage.style.display = 'none';
+}
+    </script>
+</body>
+</html>
