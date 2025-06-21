@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: neural-style
+    env: python
+    buildCommand: ""
+    startCommand: py app.py
+    plan: free
