@@ -1,6 +1,6 @@
 Flask==3.0.3
 Werkzeug==3.0.2
 Pillow==10.3.0
-tensorflow==2.15.0
-tensorflow_hub==0.15.0
-matplotlib==3.9.0
+tensorflow==2.13.0
+tensorflow_hub==0.14.0
+matplotlib==3.7.2
