@@ -3,5 +3,6 @@ services:
     name: neural-style
     env: python
     plan: free
+    runtime: python-3.11.9  # Use Python 3.11 instead
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
